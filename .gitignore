@@ -164,3 +164,4 @@ cython_debug/
 data/
 distractor_preference_env/
 tokens/
+scripts/HPC_Script.sh

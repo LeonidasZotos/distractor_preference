@@ -11,7 +11,7 @@ cache_dir = '/scratch/' + \
     str(open('../tokens/HPC_ACCOUNT_ID.txt', 'r').read()) + '/cache'
 
 
-DATASET = "LeoZotos/bio_full"
+DATASET = "LeoZotos/usmle_full"
 WIKI = "en"  # or 'simple'
 
 
@@ -32,7 +32,7 @@ def retrieve_relevant_docs(
         device: torch.device,
         top_k: int = 20,
         batch_size: int = 204800,
-        num_workers: int = 48,) -> List[List[str]]:
+        num_workers: int = 8,) -> List[List[str]]:
     """
     !!!This function was written by Gemini 2.5!!!
     Retrieves the top_k relevant documents for each question using an optimized,

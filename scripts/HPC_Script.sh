@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --time=72:00:00
-#SBATCH --mem 64GB
+#SBATCH --time=1:00:00
+#SBATCH --mem 32GB
 #SBATCH --gpus-per-node=v100:1
 
 module purge
