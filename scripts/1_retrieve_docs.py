@@ -10,9 +10,11 @@ os.environ['HF_HOME'] = '/scratch/' + \
 cache_dir = '/scratch/' + \
     str(open('../tokens/HPC_ACCOUNT_ID.txt', 'r').read()) + '/cache'
 
-
-DATASET = "LeoZotos/usmle_full"
-WIKI = "en"  # or 'simple'
+DATASET = "LeoZotos/bio_full"
+WIKI = "Simple"  # 'En' or 'Simple'
+EMD_COL_QUESTIONS = 'Emb_Only_Options' # or 'emb' to use the full column
+NUM_DOCS_RETRIEVED = 20
+RETRIEVED_DOCS_COL_NAME = 'Relevant_Docs_' + WIKI + '_Only_Options' + '_' + str(NUM_DOCS_RETRIEVED)
 
 
 hf_api_key = ""
@@ -21,17 +23,15 @@ with open("../tokens/HF_TOKEN.txt", "r") as f:
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
 question_set = load_dataset(DATASET, split='train',
                             token=hf_api_key, cache_dir=cache_dir)
-
 
 def retrieve_relevant_docs(
         question_set: Dataset,
         passages: Dataset,
         device: torch.device,
-        top_k: int = 20,
-        batch_size: int = 204800,
+        top_k: int = NUM_DOCS_RETRIEVED,
+        batch_size: int = 20480,
         num_workers: int = 8,) -> List[List[str]]:
     """
     !!!This function was written by Gemini 2.5!!!
@@ -65,7 +65,7 @@ def retrieve_relevant_docs(
     # 1. Load all question embeddings into GPU memory.
     num_questions = len(question_set)
     question_embs = torch.tensor(
-        question_set['emb'], dtype=torch.bfloat16).to(device)
+        question_set[EMD_COL_QUESTIONS], dtype=torch.bfloat16).to(device)
 
     # 2. Initialize tensors to store top scores and their corresponding passage indices.
     top_k_scores = torch.full(
@@ -135,13 +135,13 @@ def retrieve_relevant_docs(
 
 
 passages = load_dataset("Cohere/wikipedia-2023-11-embed-multilingual-v3",
-                        WIKI, split="train", cache_dir=cache_dir, token=hf_api_key)
+                        WIKI.lower(), split="train", cache_dir=cache_dir, token=hf_api_key)
 
 relevant_docs = retrieve_relevant_docs(question_set, passages, device)
 
 
 def replace_column_data(example, idx):
-    example["Relevant_Docs_" + WIKI] = relevant_docs[idx]
+    example[RETRIEVED_DOCS_COL_NAME] = relevant_docs[idx]
     return example
 
 
@@ -149,7 +149,7 @@ question_set = question_set.map(replace_column_data, with_indices=True)
 
 question_set.push_to_hub(
     repo_id=DATASET,
-    commit_message="Added relevant documents from Wiki Simple",
+    commit_message="Added relevant documents from Wiki",
     token=hf_api_key,
     private=True
 )
