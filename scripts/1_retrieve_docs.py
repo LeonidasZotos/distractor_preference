@@ -10,11 +10,16 @@ os.environ['HF_HOME'] = '/scratch/' + \
 cache_dir = '/scratch/' + \
     str(open('../tokens/HPC_ACCOUNT_ID.txt', 'r').read()) + '/cache'
 
+
+#### Setup parameters ####
 DATASET = "LeoZotos/bio_full"
-WIKI = "Simple"  # 'En' or 'Simple'
-EMD_COL_QUESTIONS = 'Emb_Only_Options' # or 'emb' to use the full column
-NUM_DOCS_RETRIEVED = 20
-RETRIEVED_DOCS_COL_NAME = 'Relevant_Docs_' + WIKI + '_Only_Options' + '_' + str(NUM_DOCS_RETRIEVED)
+WIKI = "En"  # 'En' or 'Simple'
+EMD_COL_QUESTIONS = 'Emb' # 'Emb_Only_Options' or 'Emb'
+NUM_DOCS_RETRIEVED = 60
+############################
+
+SOURCE_TEXT = "" if EMD_COL_QUESTIONS == "Emb" else "_Only_Options"
+RETRIEVED_DOCS_COL_NAME = 'Relevant_Docs_' + WIKI + SOURCE_TEXT + '_' + str(NUM_DOCS_RETRIEVED)
 
 
 hf_api_key = ""
