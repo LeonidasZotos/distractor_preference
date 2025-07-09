@@ -4,23 +4,44 @@ import torch
 from tqdm.auto import tqdm
 from torch.utils.data import DataLoader
 from typing import List
+import argparse
 
 os.environ['HF_HOME'] = '/scratch/' + \
     str(open('../tokens/HPC_ACCOUNT_ID.txt', 'r').read())
 cache_dir = '/scratch/' + \
     str(open('../tokens/HPC_ACCOUNT_ID.txt', 'r').read()) + '/cache'
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Retrieve Relevant Documents for Questions')
+    parser.add_argument('-d', '--dataset', type=str,
+                        help='Dataset to use ("bio" or "immu")', required=True)
+    parser.add_argument('-w', '--wiki_source', type=str,
+                        help='Wikipedia Source, "Simple" or "En"', required=True)
+    parser.add_argument('-e', '--embedding_column', type=str,
+                        help='"Emb_Only_Options" or "Emb"', required=True)
+    parser.add_argument('-n', '--num_docs_retrieved', type=int,
+                        help='Number of documents to retrieve', required=True)
+    
+    return dict(vars(parser.parse_args()))
 
+args = parse_args()
 #### Setup parameters ####
-DATASET = "LeoZotos/bio_full"
-WIKI = "En"  # 'En' or 'Simple'
-EMD_COL_QUESTIONS = 'Emb' # 'Emb_Only_Options' or 'Emb'
-NUM_DOCS_RETRIEVED = 60
+DATASET = "LeoZotos/" + args['dataset'] + "_full"
+WIKI = args['wiki_source']  # 'En' or 'Simple'
+EMD_COL_QUESTIONS = args['embedding_column'] # 'Emb_Only_Options' or 'Emb'
+NUM_DOCS_RETRIEVED = args['num_docs_retrieved']
 ############################
 
 SOURCE_TEXT = "" if EMD_COL_QUESTIONS == "Emb" else "_Only_Options"
 RETRIEVED_DOCS_COL_NAME = 'Relevant_Docs_' + WIKI + SOURCE_TEXT + '_' + str(NUM_DOCS_RETRIEVED)
 
+print("Running with Parameters:")
+print(f"Dataset: {DATASET}")
+print(f"Wikipedia Source: {WIKI}")
+print(f"Embedding Column: {EMD_COL_QUESTIONS}")
+print(f"Number of Documents Retrieved: {NUM_DOCS_RETRIEVED}")
+print(f"Retrieved Docs Column Name: {RETRIEVED_DOCS_COL_NAME}")
+print(f"Detected {os.cpu_count()} CPU cores")
 
 hf_api_key = ""
 with open("../tokens/HF_TOKEN.txt", "r") as f:
@@ -36,8 +57,8 @@ def retrieve_relevant_docs(
         passages: Dataset,
         device: torch.device,
         top_k: int = NUM_DOCS_RETRIEVED,
-        batch_size: int = 20480,
-        num_workers: int = 8,) -> List[List[str]]:
+        batch_size: int = 30720,
+        num_workers: int = os.cpu_count(),) -> List[List[str]]:
     """
     !!!This function was written by Gemini 2.5!!!
     Retrieves the top_k relevant documents for each question using an optimized,
