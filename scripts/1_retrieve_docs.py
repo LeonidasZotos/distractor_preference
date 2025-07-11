@@ -11,8 +11,10 @@ os.environ['HF_HOME'] = '/scratch/' + \
 cache_dir = '/scratch/' + \
     str(open('../tokens/HPC_ACCOUNT_ID.txt', 'r').read()) + '/cache'
 
+
 def parse_args():
-    parser = argparse.ArgumentParser(description='Retrieve Relevant Documents for Questions')
+    parser = argparse.ArgumentParser(
+        description='Retrieve Relevant Documents for Questions')
     parser.add_argument('-d', '--dataset', type=str,
                         help='Dataset to use ("bio" or "immu")', required=True)
     parser.add_argument('-w', '--wiki_source', type=str,
@@ -21,19 +23,21 @@ def parse_args():
                         help='"Emb_Only_Options" or "Emb"', required=True)
     parser.add_argument('-n', '--num_docs_retrieved', type=int,
                         help='Number of documents to retrieve', required=True)
-    
+
     return dict(vars(parser.parse_args()))
+
 
 args = parse_args()
 #### Setup parameters ####
 DATASET = "LeoZotos/" + args['dataset'] + "_full"
 WIKI = args['wiki_source']  # 'En' or 'Simple'
-EMD_COL_QUESTIONS = args['embedding_column'] # 'Emb_Only_Options' or 'Emb'
+EMD_COL_QUESTIONS = args['embedding_column']  # 'Emb_Only_Options' or 'Emb'
 NUM_DOCS_RETRIEVED = args['num_docs_retrieved']
 ############################
 
 SOURCE_TEXT = "" if EMD_COL_QUESTIONS == "Emb" else "_Only_Options"
-RETRIEVED_DOCS_COL_NAME = 'Relevant_Docs_' + WIKI + SOURCE_TEXT + '_' + str(NUM_DOCS_RETRIEVED)
+RETRIEVED_DOCS_COL_NAME = 'Relevant_Docs_' + WIKI + \
+    SOURCE_TEXT + '_' + str(NUM_DOCS_RETRIEVED)
 
 print("Running with Parameters:")
 print(f"Dataset: {DATASET}")
@@ -51,6 +55,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 question_set = load_dataset(DATASET, split='train',
                             token=hf_api_key, cache_dir=cache_dir)
+
 
 def retrieve_relevant_docs(
         question_set: Dataset,
