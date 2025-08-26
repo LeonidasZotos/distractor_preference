@@ -53,8 +53,7 @@ with open("../tokens/HF_TOKEN.txt", "r") as f:
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-question_set = load_dataset(DATASET, split='train',
-                            token=hf_api_key, cache_dir=cache_dir)
+question_set = load_dataset(DATASET, split='train',  cache_dir=cache_dir)
 
 
 def retrieve_relevant_docs(
@@ -166,7 +165,7 @@ def retrieve_relevant_docs(
 
 
 passages = load_dataset("Cohere/wikipedia-2023-11-embed-multilingual-v3",
-                        WIKI.lower(), split="train", cache_dir=cache_dir, token=hf_api_key)
+                        WIKI.lower(), split="train", cache_dir=cache_dir)
 
 relevant_docs = retrieve_relevant_docs(question_set, passages, device)
 
@@ -181,6 +180,5 @@ question_set = question_set.map(replace_column_data, with_indices=True)
 question_set.push_to_hub(
     repo_id=DATASET,
     commit_message="Added relevant documents from Wiki",
-    token=hf_api_key,
     private=True
 )

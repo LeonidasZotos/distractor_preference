@@ -165,3 +165,4 @@ data/
 distractor_preference_env/
 tokens/
 scripts/HPC_Script.sh
+distractor_preference_env
